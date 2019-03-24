@@ -3,14 +3,57 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Page Title</title>
+    <title>wasm apis</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+  </head>
+  <body>
     <script>
+      // console.log('h0');
+      // fetch('simple.wasm')
+      //   .then(response => response.arrayBuffer())
+      //   .then(bytes => {
+      //     console.log('hi');
+      //     return WebAssembly.instantiate(bytes, {});
+      //   })
+      //   .then(results => {
+      //     console.log('hip');
+      //     console.log(results.instance);
+      //     console.log(results.exports.exported_func());
+      //   });
       var importObject = {
         imports: { imported_func: arg => console.log(arg) }
       };
+
+      //   WebAssembly.instantiateStreaming(fetch('simple.wasm'), importObject).then(
+      //     obj => obj.instance.exports.exported_func()
+      //   );
+      fetch('simple.wasm')
+        .then(response => response.arrayBuffer())
+        .then(bytes => { return WebAssembly.instantiate(bytes, importObject); })
+        .then(results => {
+          // console.log("yup");
+          console.log(results);
+          // console.log(results.instance);
+          // console.log("results.module", results.module);
+          // console.log(results.instance.exports.exported_func.toString());
+          // return results.instance.exports.exported_func();
+        });
+      var memory = new WebAssembly.Memory({ initial: 1 });
+      // console.log(memory);
+
+      fetch('memory.wasm')
+        .then(response => response.arrayBuffer())
+        .then(bytes => WebAssembly.instantiate(bytes, { js: { mem: memory } }))
+        .then(obj => {
+          var i32 = new Uint32Array(memory.buffer);
+          console.log(i32);
+          for (var i = 0; i < 10; i++) {
+            i32[i] = i;
+          }
+          var sum = obj.instance.exports.accumulate(0, 10);
+          console.log(memory);
+          console.log(sum);
+        });
     </script>
-  </head>
-  <body></body>
+  </body>
 </html>
