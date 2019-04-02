@@ -8,52 +8,47 @@
   </head>
   <body>
     <script>
-      // console.log('h0');
-      // fetch('simple.wasm')
-      //   .then(response => response.arrayBuffer())
-      //   .then(bytes => {
-      //     console.log('hi');
-      //     return WebAssembly.instantiate(bytes, {});
-      //   })
-      //   .then(results => {
-      //     console.log('hip');
-      //     console.log(results.instance);
-      //     console.log(results.exports.exported_func());
-      //   });
-      var importObject = {
-        imports: { imported_func: arg => console.log(arg) }
+      // Basic example
+      const importObject = {
+        imports: {
+          imported_func: arg => console.log(arg)
+        }
       };
-
-      //   WebAssembly.instantiateStreaming(fetch('simple.wasm'), importObject).then(
-      //     obj => obj.instance.exports.exported_func()
-      //   );
       fetch('simple.wasm')
         .then(response => response.arrayBuffer())
-        .then(bytes => { return WebAssembly.instantiate(bytes, importObject); })
-        .then(results => {
-          // console.log("yup");
-          console.log(results);
-          // console.log(results.instance);
-          // console.log("results.module", results.module);
-          // console.log(results.instance.exports.exported_func.toString());
-          // return results.instance.exports.exported_func();
+        .then(bytes => WebAssembly.instantiate(bytes, importObject))
+        .then(obj => {
+          const { instance } = obj;
+          instance.exports.exported_func();
         });
-      var memory = new WebAssembly.Memory({ initial: 1 });
-      // console.log(memory);
 
+      // Streaming instantiation
+      // WebAssembly.instantiateStreaming(fetch("simple.wasm"), importObject).then(obj => obj.instance.exports.exported_func());
+
+      // Memory example: basic
+      const memory = new WebAssembly.Memory({ initial: 1 });
       fetch('memory.wasm')
         .then(response => response.arrayBuffer())
         .then(bytes => WebAssembly.instantiate(bytes, { js: { mem: memory } }))
-        .then(obj => {
-          var i32 = new Uint32Array(memory.buffer);
-          console.log(i32);
-          for (var i = 0; i < 10; i++) {
-            i32[i] = i;
-          }
-          var sum = obj.instance.exports.accumulate(0, 10);
+        .then(object => {
+          new Uint32Array(memory.buffer)[0] = 42;
           console.log(memory);
-          console.log(sum);
         });
+
+      // Memory example:
+      // fetch('memory.wasm')
+      //   .then(response => response.arrayBuffer())
+      //   .then(bytes => WebAssembly.instantiate(bytes, { js: { mem: memory } }))
+      //   .then(obj => {
+      //     var i32 = new Uint32Array(memory.buffer);
+      //     console.log(i32);
+      //     for (var i = 0; i < 10; i++) {
+      //       i32[i] = i;
+      //     }
+      //     var sum = obj.instance.exports.accumulate(0, 10);
+      //     console.log(memory);
+      //     console.log(sum);
+      //   });
     </script>
   </body>
 </html>
